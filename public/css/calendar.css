@@ -1,3 +1,7 @@
+.calendar {
+    position: relative;
+}
+
 .calendar__table {
     width: 100%;
     height: calc(95vh - 128px);
@@ -27,4 +31,38 @@
 
 .calendar__overmonth .calendar__day {
     opacity: 0.3;
+}
+
+.add__event__button {
+    display: block;
+    width: 55px;
+    height: 55px;
+    line-height: 55px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 30px;
+    background-color: #007bff;
+    border-radius: 50%;
+    -webkit-box-shadow: 0 6px 10px 0 #0000001a, 0 1px 18px 0 #0000001a, 0 3px 5px -1px #0003;
+    -moz-box-shadow: 0 6px 10px 0 #0000001a, 0 1px 18px 0 #0000001a, 0 3px 5px -1px #0003;
+    box-shadow: 0 6px 10px 0 #0000001a, 0 1px 18px 0 #0000001a, 0 3px 5px -1px #0003;
+
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    text-decoration: none;
+    -webkit-transition: transform 0.3s;
+    -moz-transition: transform 0.3s;
+    -o-transition: transform 0.3s;
+    transition: transform 0.3s;
+}
+
+.add__event__button:hover {
+    -webkit-transform: scale(1.2);
+    -moz-transform: scale(1.2);
+    -ms-transform: scale(1.2);
+    -o-transform: scale(1.2);
+    transform: scale(1.2);
+    text-decoration: none;
+    color: #ffffff;
 }
