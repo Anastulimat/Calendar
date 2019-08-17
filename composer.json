@@ -1,0 +1,15 @@
+{
+    "name": "tzkm2460/calendar",
+    "authors": [
+        {
+            "name": "Tulimat Anas",
+            "email": "anas.tulimat@orange.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Calendar\\": "src/Calendar"
+        }
+    },
+    "require": {}
+}

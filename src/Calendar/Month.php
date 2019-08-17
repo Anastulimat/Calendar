@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Date;
+namespace Calendar;
 
 use DateTime;
 use Exception;
@@ -34,7 +34,6 @@ class Month {
      * @param int $month Le mois compris entre 1 et 12
      * @param int $year  L'année
      *
-     * @throws Exception
      */
     public function __construct($month = null, $year = null)
     {
@@ -44,10 +43,6 @@ class Month {
 
         if($year === null) {
             $year = intval(date('Y'));
-        }
-
-        if($year < 1970) {
-            throw new Exception("L'année est inférieure à 1970");
         }
 
         $this->month = $month;
@@ -71,7 +66,6 @@ class Month {
         if($weeks < 0) {
             $weeks = intval($end->format('W'));
         }
-
         return $weeks;
     }
 

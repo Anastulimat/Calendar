@@ -1,61 +1,72 @@
-<!doctype html>
-<html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport"
-              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="../public/css/calendar.css">
-        <title>Calendar</title>
-    </head>
+<?php
 
-    <body>
-        <nav class="navbar navbar-dark bg-primary mb-3">
-            <a href="/index.php" class="navbar-brand">Mon Calendar</a>
-        </nav>
+require '../src/bootstrap.php';
 
-        <div class="container-fluid">
-        <?php
+use Calendar\Events;
+use Calendar\Month;
 
-        require '../src/Date/Month.php';
-        use App\Date\Month;
+try {
+    $pdo = getPDO();
+    $month = new Month(isset($_GET['month']) ? $_GET['month'] : null, isset($_GET['year']) ? $_GET['year'] : null);
+    $events = new Events($pdo);
 
-        try {
-            $month = new Month(isset($_GET['month']) ? $_GET['month'] : null, isset($_GET['year']) ? $_GET['year'] : null);
-            $start = $month->getStartingDate()->modify('last monday');
-        } catch(Exception $e) {
-            $month = new Month();
-        }
-        ?>
+    $start = $month->getStartingDate();
+    $weeks = $month->getWeeks();
+    /* Si le mois commence par un lundi, alors on applique pas modify('last monday) */
+    $start = $start->format('N') === '1' ? $start : $month->getStartingDate()->modify('last monday');
+    /* Pour calculer le jour du fin du calendrier */
+    $end = (clone $start)->modify('+' . (6 + 7 * ($weeks -1)) . ' days');
 
-        <div class="d-flex flex-row align-items-center justify-content-between mx-sm-3">
-            <h1><?= $month->toString(); ?></h1>
-            <div>
-                <a href="/calendar/public/index.php?month=<?= $month->previousMonth()->month; ?>&year=<?= $month->previousMonth()->year; ?>" class="btn btn-primary">&lt;</a>
-                <a href="/calendar/public/index.php?month=<?= $month->nextMonth()->month; ?>&year=<?= $month->previousMonth()->year; ?>" class="btn btn-primary">&gt;</a>
-            </div>
-        </div>
+    $eventsBetweenDates = $events->getEventsBetweenByDay($start, $end);
 
-            <table class="calendar__table calendar__table__<?= $month->getWeeks(); ?>weeks">
-                <?php for($i = 0; $i < $month->getWeeks(); $i++): ?>
-                    <tr>
-                        <?php
-                            foreach($month->days as $k => $day):
-                            $date = clone $start;
-                            $date->modify("+" . ($k + $i * 7) . " days");
-                        ?>
-                        <td class="<?= $month->withinMonth($date) ? '' : 'calendar__overmonth' ?>">
-                            <?php if($i === 0): ?>
-                            <div class="calendar__weekday"><?= $day; ?></div>
-                            <?php endif; ?>
+} catch(Exception $e) {
+    $month = new Month();
+}
+?>
 
-                            <div class="calendar__day"><?= $date->format('d') ?></div>
-                        </td>
-                        <?php endforeach; ?>
-                    </tr>
-                <?php endfor; ?>
-            </table>
-        </div>
-    </body>
-</html>
+
+<!-- HAEDER -->
+<?php require '../views/header.php'; ?>
+
+<!-- Affichage le nom du mois avec les bouttons de navigation -->
+<div class="d-flex flex-row align-items-center justify-content-between mx-sm-3">
+    <h1><?= $month->toString(); ?></h1>
+    <div>
+        <a href="/calendar/public/index.php?month=<?= $month->previousMonth()->month; ?>&year=<?= $month->previousMonth()->year; ?>" class="btn btn-primary">&lt;</a>
+        <a href="/calendar/public/index.php?month=<?= $month->nextMonth()->month; ?>&year=<?= $month->nextMonth()->year; ?>" class="btn btn-primary">&gt;</a>
+    </div>
+</div>
+
+    <!-- Affichage du calendrier -->
+    <table class="calendar__table calendar__table__<?= $weeks ?>weeks">
+        <?php for($i = 0; $i < $weeks; $i++): ?>
+            <tr>
+                <?php
+                    /* Afficher le nom des jours*/
+                    foreach($month->days as $k => $day):
+                    $date = clone $start;
+                    $date->modify("+" . ($k + $i * 7) . " days");
+
+                    //Récupérer les événements du jour sinon ça envoie un tableau vide
+                    $eventsForDay = $eventsBetweenDates[$date->format('Y-m-d')] ?? [];
+                ?>
+                <td class="<?= $month->withinMonth($date) ? '' : 'calendar__overmonth' ?>">
+                    <?php if($i === 0): ?>
+                    <div class="calendar__weekday"><?= $day; ?></div>
+                    <?php endif; ?>
+
+                    <div class="calendar__day"><?= $date->format('d') ?></div>
+                    <?php foreach($eventsForDay as $events) : ?>
+                        <div class="calendar__event">
+                            <?= (new DateTime($events['start']))->format('H:i'); ?> -
+                            <a href="event.php?id=<?= $events['id']; ?>"><?= htmlentities($events['title']); ?></a>
+                        </div>
+                    <?php endforeach; ?>
+                </td>
+                <?php endforeach; ?>
+            </tr>
+        <?php endfor; ?>
+    </table>
+
+<!-- FOOTER -->
+<?php require '../views/footer.php'; ?>
